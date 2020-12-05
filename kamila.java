@@ -1,5 +1,4 @@
 import java.util.Scanner;
-import java.util.Arrays; // TODO usunac
 
 public class kamila {
     long bPionki1;
@@ -81,8 +80,6 @@ public class kamila {
     void zmienPozycjePiona(int x1, int y1, int x2, int y2) {
         // Zakładamy w tym miejscu, że ruch jest w 100% poprawny i możliwy do wykonania.
         // Sprawdzone wcześniej.
-        int a[] = {x1, y1, x2, y2};
-        System.out.println(Arrays.toString(a));
         for (int i = 0; i < ilePionkowNaLonga; ++i) {
             long przes = ileBitowNaPionka * i;
 
@@ -101,7 +98,7 @@ public class kamila {
         // ustawiamy bit 'czyWGrze' na 0 -> pionek jest zbity.
         for (int i = 0; i < ilePionkowNaLonga; ++i) {
             long przes = ileBitowNaPionka * i;
-            long czyWGrzeBit = (1L << (przes + 8));
+            long czyWGrzeBit = 1L << (przes + 8);
 
             if (czyPionekNaXY(bPionki1 >> przes, x, y))
                 bPionki1 &= ~czyWGrzeBit;
@@ -118,7 +115,7 @@ public class kamila {
         // zmartwychwstaje pionka odpowiedniego koloru na (x, y)
         for (int i = 0; i < ilePionkowNaLonga; ++i) {
             long przes = ileBitowNaPionka * i;
-            long czyWGrzeBit = (1 << (przes + 8));
+            long czyWGrzeBit = (1L << (przes + 8));
 
             if (czyBialy) {
                 long p = bPionki1 >> przes;
@@ -148,7 +145,32 @@ public class kamila {
     }
     
     void promujPionaDoDamki(int x, int y) {
-        // TODO
+        System.out.println("PROMUJEMY!");
+        for (int i = 0; i < ilePionkowNaLonga; ++i) {
+            long przes = ileBitowNaPionka * i;
+            long czyDamkaBit = 1L << (przes + 7);
+
+            long p = bPionki1 >> przes;
+            if (pozX(p) == x && pozY(p) == y && czyWGrze(p)) {
+                bPionki1 |= czyDamkaBit;
+                return;
+            }
+            p = bPionki2 >> przes;
+            if (pozX(p) == x && pozY(p) == y && czyWGrze(p)) {
+                bPionki2 |= czyDamkaBit;
+                return;
+            }
+            p = czPionki1 >> przes;
+            if (pozX(p) == x && pozY(p) == y && czyWGrze(p)) {
+                czPionki1 |= czyDamkaBit;
+                return;
+            }
+            p = czPionki2 >> przes;
+            if (pozX(p) == x && pozY(p) == y && czyWGrze(p)) {
+                czPionki2 |= czyDamkaBit;
+                return;
+            }
+        }
     }
 
     void bijPionaIZaktualizujPlansze(int x1, int y1, int x2, int y2) {
@@ -182,18 +204,11 @@ public class kamila {
             && !mogeZbicPionem(x, y, x - 2, y - 2, turaBialego);
     }
 
-    int pom = 0;
-
     boolean biciePionem(int x1, int y1, int x2, int y2, boolean turaBialego) {
         // Zwraca true jeśli możliwa jest seria bić pionkiem z (x1, y1) prowadząca do
         // (x2, y2), przy aktualnej planszy (zmieniamy ją w trakcie kolejnych bić i
         // przywracamy do stanu początkowego, jeśli okazało się, że pewna sekwencja bić
         // to ślepy zaułek.
-        pom++;
-        if (pom == 17)
-            return false;
-        int a[] = {x1, y1, x2, y2};
-        System.out.println(Arrays.toString(a));
         if (nieMaBiciaPionem(x1, y1, turaBialego) && x1 == x2 && y1 == y2) {
             // wykonaliśmy całe poprawne bicie - koniec
             System.out.println("KONIEC");
@@ -236,26 +251,6 @@ public class kamila {
         return false;
     }
 
-    /*
-    boolean probujBicPiona(int x1, int y1, int x2, int y2, int xKoniec, int yKoniec, boolean turaBialego) {
-        if (x2 < 0 || x2 >= wlkPlanszy || y2 < 0 || y2 >= wlkPlanszy)
-            // poza plansza
-            return false;
-        int xBityPion = (x1 + x2) / 2;
-        int yBityPion = (y1 + y2) / 2;
-        if (!poleZajete(xKoniec, yKoniec)) {
-            long bityPionek = znajdzPiona(xBityPion, yBityPion);
-            if (!czyWGrze(bityPionek) || czyBialy(bityPionek) == turaBialego)
-                // nie ma pionka      || jest tego samego koloru co nasz
-                return false;
-            
-            // wszystko sie zgadza - bijemy
-            bijPionaIZaktualizujPlansze();
-
-
-        }
-    }*/
-
     boolean ruchPionem(int x1, int y1, int x2, int y2, boolean turaBialego) {
         // ruch pionkiem z pola (x1, y1) do (x2, y2) - wiemy, że oba pola w zasięgu planszy
         // Zwraca true, jak ruch się powiódł i plansza została zaktualizowana
@@ -271,11 +266,16 @@ public class kamila {
             if (poleZajete(x2, y2))
                 return false;
             
-            // TODO jesli mamy bicie, to nie mozemy sie tak ruszyc!
+            if (!nieMaBiciaPionem(x1, y1, turaBialego)) {
+                // TODO jak bicie damka to tez.
+                // TODO jak kazdym innym pionem bicie, to tez :(
+                System.out.println("Masz możliwe bicie pionem. Musisz go użyć.");
+                return false;
+            }
             
             zmienPozycjePiona(x1, y1, x2, y2);
-            //if ((turaBialego && x2 == wlkPlanszy - 1) || (!turaBialego && x2 == 0))
-            //    promujPionaDoDamki(x2, y2);
+            if ((turaBialego && y2 == 0) || (!turaBialego && y2 == wlkPlanszy - 1))
+                promujPionaDoDamki(x2, y2);
             return true;
         }
         else {
@@ -290,7 +290,11 @@ public class kamila {
     }
 
     boolean ruchDamka(int x1, int y1, int x2, int y2, boolean turaBialego) {
-        // TODO
+        boolean jedenRuch = mogeW1RuchuDamka(x1, y1, x2, y2);
+        if (jedenRuch) {
+            boolean bijeCosPoDrodze = bijeCosPoDrodzeDamka(x1, y1, x2, y2);
+            if (!)
+        }
         return false;
     }
 
@@ -316,6 +320,11 @@ public class kamila {
         }
     }
 
+    boolean koniecGry() {
+        //TODO implement
+        return false;
+    }
+
     void ustawStartowePolozenie() {
         long przes = ileBitowNaPionka;
         bPionki1 = 0571L | (0573L << przes) | (0575L << (przes * 2))
@@ -326,11 +335,6 @@ public class kamila {
             | (0406L << (przes * 3)) | (0411L << (przes * 4)) | (0413L << (przes * 5));
         czPionki2 = 0415L | (0417L << przes) | (0420L << (przes * 2))
             | (0422L << (przes * 3)) | (0424L << (przes * 4)) | (0426L << (przes * 5));
-    }
-
-    boolean koniecGry() {
-        //TODO implement
-        return false;
     }
 
     /******************************* RYSOWANIE ***************************************
@@ -344,7 +348,7 @@ public class kamila {
         if (!damka)
             System.out.print(bialy ? "X" : "O");
         else
-            System.out.print("Not implemented");
+            System.out.print(bialy ? "B" : "C");
     }
 
     void rysujPustePole(int x, int y) {
@@ -405,3 +409,9 @@ public class kamila {
         scan.close();
     }
 }
+
+
+
+// TODO
+// 1. jak mamy bicie, to nie mozemy sie ruszyc bez
+// 2. koniecGry
