@@ -8,6 +8,8 @@ public class kamila {
     long czPionki2;
 
     int wlkPlanszy = 8;
+    int maxLiczbaRuchowDamkamiBezBicia = 30;
+
     long ilePionkowNaLonga = 6;
     long ileBitowNaPionka = 9;
 
@@ -545,7 +547,7 @@ public class kamila {
      */
     boolean koniecGry(boolean turaBialego) {
         // 3. przypadek
-        if (ileRuchowDamkamiBezBicia >= 30)
+        if (ileRuchowDamkamiBezBicia >= maxLiczbaRuchowDamkamiBezBicia)
             return true;
 
         // 1. przypadek: mamy bicie = nie koniec.
@@ -670,11 +672,14 @@ public class kamila {
             }
         }
         gra.rysujPlansze();
-        gra.printWriter.println("Koniec gry!! Wygrały " + (turaBialego ? "czarne" : "białe"));
+        gra.printWriter.print("Koniec gry!! ");
+        if (gra.ileRuchowDamkamiBezBicia >= gra.maxLiczbaRuchowDamkamiBezBicia)
+            gra.printWriter.print("Remis po 15 parach ruchów damkami bez bicia.");
+        else
+            gra.printWriter.println("Wygrały " + (turaBialego ? "czarne." : "białe."));
         scan.close();
     }
 }
 
 // TODO
 // 1. pousuwać komentarze
-// 2. TODO bug nie rozrozniamy miedzy pionem a damka. Mozemy ustawic bledny typ pionka
