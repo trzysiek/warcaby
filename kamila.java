@@ -1,3 +1,4 @@
+import java.io.PrintWriter;
 import java.util.Scanner;
 
 public class kamila {
@@ -9,6 +10,8 @@ public class kamila {
     int wlkPlanszy = 8;
     long ilePionkowNaLonga = 6;
     long ileBitowNaPionka = 9;
+
+    PrintWriter printWriter = new PrintWriter(System.out, true);
 
     boolean czyBialy(long pionek) {
         // ostatnie 9 bitów 'pionek' opisuje naszego pionka
@@ -290,11 +293,11 @@ public class kamila {
     }
 
     boolean ruchDamka(int x1, int y1, int x2, int y2, boolean turaBialego) {
-        boolean jedenRuch = mogeW1RuchuDamka(x1, y1, x2, y2);
-        if (jedenRuch) {
-            boolean bijeCosPoDrodze = bijeCosPoDrodzeDamka(x1, y1, x2, y2);
-            if (!)
-        }
+        //boolean jedenRuch = mogeW1RuchuDamka(x1, y1, x2, y2);
+        //if (jedenRuch) {
+        //    boolean bijeCosPoDrodze = bijeCosPoDrodzeDamka(x1, y1, x2, y2);
+        //    if (!)
+        //}
         return false;
     }
 
@@ -344,42 +347,43 @@ public class kamila {
         boolean bialy = czyBialy(pionek);
         boolean damka = czyDamka(pionek);
 
-        // TODO dodac rysowanie unicode + damki
+        char bPion = '\u2659';
+        char czPion = '\u265F';
+        char bDamka = '\u2655';
+        char czDamka = '\u265B';
         if (!damka)
-            System.out.print(bialy ? "X" : "O");
+            printWriter.print((bialy ? bPion : czPion) + " ");
         else
-            System.out.print(bialy ? "B" : "C");
+            printWriter.print((bialy ? bDamka : czDamka) + " ");
     }
 
     void rysujPustePole(int x, int y) {
-        System.out.print(" ");
+        char biale = '\u2B1B';
+        char czarne = '\u2B1C';
+        printWriter.print(((x + y) % 2 == 1) ? czarne : biale);
     }
 
     void rysujPlansze() {
-        System.out.print(" ");
+        printWriter.print(" ");
         for (int i = 1; i <= wlkPlanszy; ++i)
-            System.out.print(i);
-        System.out.println();
+            printWriter.print(i + " ");
+        printWriter.println();
         for (int y = wlkPlanszy - 1; y >= 0; --y) {
-            System.out.print(y + 1);
+            printWriter.print(y + 1);
             for (int x = 0; x < wlkPlanszy; ++x) {
                 long pionek = pionekNaXY(x, y);
-                /*if (y == 0) {
-                    System.out.print(x);
-                    System.out.println(czyWGrze(pionek));
-                }*/
                 if (czyWGrze(pionek))
                     rysujPionka(pionek);
                 else
                     rysujPustePole(x, y);
             }
-            System.out.print(y + 1);
-            System.out.println();
+            printWriter.print(y + 1);
+            printWriter.println();
         }
-        System.out.print(" ");
+        printWriter.print(" ");
         for (int i = 1; i <= wlkPlanszy; ++i)
-            System.out.print(i);
-        System.out.println("\n-------------");
+            printWriter.print(i + " ");
+        printWriter.println("\n-------------");
     }
 
     public static void main(String[] args) {
@@ -415,3 +419,4 @@ public class kamila {
 // TODO
 // 1. jak mamy bicie, to nie mozemy sie ruszyc bez
 // 2. koniecGry
+// 3. damka
