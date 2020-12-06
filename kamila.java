@@ -311,7 +311,7 @@ public class kamila {
      * odległy o n pól.
      */
     int mogeZbicDamka(int x, int y, int dx, int dy, boolean turaBialego) {
-        System.out.printf("Zaczynam mogeZbicDamka, dx=%d, dy=%d\n", dx,dy);
+        //System.out.printf("Zaczynam mogeZbicDamka, dx=%d, dy=%d\n", dx,dy);
         int aktX = x;
         int aktY = y;
         for (int i = 1; i <= wlkPlanszy; ++i) {
@@ -319,19 +319,19 @@ public class kamila {
             aktY += dy;
             if (!naPlanszy(aktX, aktY))
                 return -1;
-            System.out.printf("aktX=%d, aktY=%d\n",aktX+1,aktY+1);
+            //System.out.printf("aktX=%d, aktY=%d\n",aktX+1,aktY+1);
             long pionek = pionekNaXY(aktX, aktY);
             if (czyWGrze(pionek)) {
-                System.out.printf("Mam pionka: (%d, %d). czyBialy(pionek): %b, turaBialego: %b\n", aktX+1,aktY+1,czyBialy(pionek), turaBialego);
+                //System.out.printf("Mam pionka: (%d, %d). czyBialy(pionek): %b, turaBialego: %b\n", aktX+1,aktY+1,czyBialy(pionek), turaBialego);
                 if (czyBialy(pionek) == turaBialego)
                     // pierwszy pionek w tym kierunku jest tego samego koloru co ruch. Zle.
                     return -1;
                 else if (naPlanszy(aktX + dx, aktY + dy) && !poleZajete(aktX + dx, aktY + dy)) {
-                    System.out.printf("WTF PRZECIEZ DZIALA: %d %d to: %d\n", aktX, x, (dx == 1) ? (aktX - x) : (x - aktX));
+                    //System.out.printf("WTF PRZECIEZ DZIALA: %d %d to: %d\n", aktX, x, (dx == 1) ? (aktX - x) : (x - aktX));
                     return (dx == 1) ? (aktX - x) : (x - aktX);
                 }
                 else {
-                    System.out.printf("WTF? Jak to nie moge sie ruszyc\n");
+                    //System.out.printf("WTF? Jak to nie moge sie ruszyc\n");
                     return -1;
                 }
             }
@@ -350,7 +350,7 @@ public class kamila {
         if (nieMaBiciaDamka(x1, y1, turaBialego) && x1 == x2 && y1 == y2)
             return true;
         
-        System.out.printf("bicieDamka: z (%d, %d) na (%d, %d). Jest bicie.\n", x1+1,y1+1,x2+1,y2+1);
+        System.out.printf("bicieDamka: z (%d, %d) na (%d, %d). Jest bicie/nie jestem na koncowej pozycji.\n", x1+1,y1+1,x2+1,y2+1);
         for (int dx = -1; dx <= 1; dx += 2) {
             for (int dy = -1; dy <= 1; dy += 2) {
                 // ruszam się w kierunku (dx, dy)
@@ -364,6 +364,7 @@ public class kamila {
                 // to teoretycznie mogłabym to zbić, ale rozbijam to na 2 ruchy, bo będzie prościej.
                 if (oIlePol == -1)
                     continue;
+                
                 for (int i = 1; i < wlkPlanszy; ++i) {
                     int skaczemyX = x1 + dx * (oIlePol + i);
                     int skaczemyY = y1 + dy * (oIlePol + i);
@@ -374,7 +375,7 @@ public class kamila {
                     if (bicieDamka(skaczemyX, skaczemyY, x2, y2, turaBialego))
                         return true;
                     cofnijAktualizacjePlanszyPoBiciu(
-                        x1, y1, skaczemyX, skaczemyY, x1 + dx * oIlePol, x2 + dy * oIlePol, turaBialego
+                        x1, y1, skaczemyX, skaczemyY, x1 + dx * oIlePol, y1 + dy * oIlePol, turaBialego
                     );
                 }
             }
@@ -519,3 +520,4 @@ public class kamila {
 // 3. damka
 // 4. pousuwać komentarze
 // 5. czarne zaczynają WTF
+// 6. multiple bicie damka nie dziala :(
