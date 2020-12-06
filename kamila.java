@@ -423,20 +423,19 @@ public class kamila {
     }
 
     boolean koniecGry() {
-        //TODO implement
         return false;
     }
 
     void ustawStartowePolozenie() {
         long przes = ileBitowNaPionka;
-        bPionki1 = 0571L | (0573L << przes) | (0575L << (przes * 2))
-            | (0577L << (przes * 3)) | (0560L << (przes * 4)) | (0562L << (przes * 5));
-        bPionki2 = 0564L | (0566L << przes) | (0551L << (przes * 2))
-        | (0553L << (przes * 3)) | (0555L << (przes * 4)) | (0557L << (przes * 5));
         czPionki1 = 0400L | (0402L << przes) | (0404L << (przes * 2))
             | (0406L << (przes * 3)) | (0411L << (przes * 4)) | (0413L << (przes * 5));
         czPionki2 = 0415L | (0417L << przes) | (0420L << (przes * 2))
             | (0422L << (przes * 3)) | (0424L << (przes * 4)) | (0426L << (przes * 5));
+        bPionki1 = 0571L | (0573L << przes) | (0575L << (przes * 2))
+            | (0577L << (przes * 3)) | (0560L << (przes * 4)) | (0562L << (przes * 5));
+        bPionki2 = 0564L | (0566L << przes) | (0551L << (przes * 2))
+            | (0553L << (przes * 3)) | (0555L << (przes * 4)) | (0557L << (przes * 5));
     }
 
     /******************************* RYSOWANIE ***************************************
@@ -447,8 +446,9 @@ public class kamila {
         boolean bialy = czyBialy(pionek);
         boolean damka = czyDamka(pionek);
 
-        char bPion = '\u2659';
-        char czPion = '\u265F';
+        // podmieniłam unicode'y dla czarnego i bialego pionka - w treści były na opak
+        char czPion = '\u2659';
+        char bPion = '\u265F';
         char bDamka = '\u2655';
         char czDamka = '\u265B';
         if (!damka)
@@ -483,7 +483,7 @@ public class kamila {
         printWriter.print(" ");
         for (int i = 1; i <= wlkPlanszy; ++i)
             printWriter.print(i + " ");
-        printWriter.println("\n-------------");
+        printWriter.println("\n------------------");
     }
 
     public static void main(String[] args) {
@@ -517,7 +517,8 @@ public class kamila {
 // TODO
 // 1. jak mamy bicie, to nie mozemy sie ruszyc bez
 // 2. koniecGry
-// 3. damka
+// 3. damka fix test_blad_kiedy_polowicznie_bijemy_damka_2.in
 // 4. pousuwać komentarze
 // 5. czarne zaczynają WTF
 // 6. multiple bicie damka nie dziala :(
+// 7. jak bijemy pionem to też możemy zapromować

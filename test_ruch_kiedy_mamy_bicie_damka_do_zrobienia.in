@@ -17,5 +17,7 @@
 2 8 3 7
 1 7 2 8
 4 6 3 5
-2 8 4 6
-Chcemy dostać "Błędny ruch"
+2 8 2 4
+5 7 4 6
+1 5 2 6
+Powinniśmy dostać błąd "Błędny ruch"
