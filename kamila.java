@@ -8,7 +8,7 @@ public class kamila {
     long czPionki2;
 
     int wlkPlanszy = 8;
-    int maxLiczbaRuchowDamkamiBezBicia = 30;
+    int maxLiczbaRuchowDamkamiBezBicia = 30; // po 15 każdego gracza
 
     long ilePionkowNaLonga = 6;
     long ileBitowNaPionka = 9;
@@ -16,18 +16,24 @@ public class kamila {
     int ileRuchowDamkamiBezBicia = 0;
     PrintWriter printWriter = new PrintWriter(System.out, true);
 
+    /**
+     * Ostatnie 9 bitów 'pionek' opisuje naszego pionka
+     */
     boolean czyBialy(long pionek) {
-        // ostatnie 9 bitów 'pionek' opisuje naszego pionka
         return ((pionek >> 6) & 0x1) == 1;
     }
 
+    /**
+     * Ostatnie 9 bitów 'pionek' opisuje naszego pionka
+     */
     boolean czyDamka(long pionek) {
-        // ostatnie 9 bitów 'pionek' opisuje naszego pionka
         return ((pionek >> 7) & 0x1) == 1;
     }
 
+    /**
+     * Ostatnie 9 bitów 'pionek' opisuje naszego pionka
+     */
     boolean czyWGrze(long pionek) {
-        // ostatnie 9 bitów 'pionek' opisuje naszego pionka
         return ((pionek >> 8) & 0x1) == 1;
     }
 
@@ -131,8 +137,6 @@ public class kamila {
         return zbityToPionek;
     }
 
-    // TODO mozliwy bug. Nie patrzymy czy przywracamy damke czy pionka.
-    // Moga byc obydwa zbite na tym samym polu!!!
     void ustawPionkaNaBedacegoWGrze(int x, int y, boolean czyBialy, boolean czyPion) {
         // zmartwychwstaje pionka odpowiedniego koloru na (x, y)
         for (int i = 0; i < ilePionkowNaLonga; ++i) {
@@ -234,19 +238,17 @@ public class kamila {
      * Zwraca true, jeśli zbiliśmy pionka. False, jak damkę.
      */
     boolean bijPionaIZaktualizujPlansze(int x1, int y1, int x2, int y2, int bityX, int bityY) {
-        // Zakładamy w tym miejscu, że bicie jest w 100% poprawne i możliwe do wykonania.
-        // Sprawdzone wcześniej.
         zmienPozycjePiona(x1, y1, x2, y2);
         return usunPionka(bityX, bityY);
     }
 
-    /** Cofam się z (x2, y2) na (x1, y1). Wstawiam pionka na (bityX, bityY).
+    /** 
+    *   Cofam się z (x2, y2) na (x1, y1). Wstawiam pionka na (bityX, bityY).
     *   Wiem, że ten pionek już tam istnieje, trzeba tylko mu ustawić bit że jest w grze. 
+    *   Muszę wstawić pionka, jeśli zbityToPion==true, w.p.p damkę.
     */
     void cofnijAktualizacjePlanszyPoBiciu(int x1, int y1, int x2, int y2,
             int bityX, int bityY, boolean turaBialego, boolean zbityToPion) {
-        // przesun pionka z (x2, y2) na (x1, y1) i dodaj pionka pomiędzy
-        // Wiemy że dodawany pionek już istnieje, trzeba tylko ustawić mu bit mówiący czy jest w grze.
         zmienPozycjePiona(x2, y2, x1, y1);
         ustawPionkaNaBedacegoWGrze(bityX, bityY, !turaBialego, zbityToPion);
     }
@@ -268,11 +270,13 @@ public class kamila {
             && !mogeZbicPionem(x, y, x - 2, y - 2, turaBialego);
     }
 
+    /**
+     *  Zwraca true jeśli możliwa jest seria bić pionkiem z (x1, y1) prowadząca do
+     *  (x2, y2), przy aktualnej planszy (zmieniamy ją w trakcie kolejnych bić i
+     *  przywracamy do stanu początkowego, jeśli okazało się, że pewna sekwencja bić
+     *  to ślepy zaułek.
+     */
     boolean biciePionem(int x1, int y1, int x2, int y2, boolean turaBialego) {
-        // Zwraca true jeśli możliwa jest seria bić pionkiem z (x1, y1) prowadząca do
-        // (x2, y2), przy aktualnej planszy (zmieniamy ją w trakcie kolejnych bić i
-        // przywracamy do stanu początkowego, jeśli okazało się, że pewna sekwencja bić
-        // to ślepy zaułek.
         if (nieMaBiciaPionem(x1, y1, turaBialego) && x1 == x2 && y1 == y2) {
             if ((turaBialego && y2 == 0) || (!turaBialego && y2 == wlkPlanszy - 1))
                 promujPionaDoDamki(x2, y2);
@@ -295,11 +299,12 @@ public class kamila {
         }
         return false;
     }
-
+    /**
+     *  Ruch pionkiem z pola (x1, y1) do (x2, y2) - wiemy, że oba pola w zasięgu planszy
+     *  Zwraca true, jak ruch się powiódł i plansza została zaktualizowana
+     *  False jak ruch jest błędny. Plansza wtedy pozostaje niezmieniona.
+     */
     boolean ruchPionem(int x1, int y1, int x2, int y2, boolean turaBialego) {
-        // ruch pionkiem z pola (x1, y1) do (x2, y2) - wiemy, że oba pola w zasięgu planszy
-        // Zwraca true, jak ruch się powiódł i plansza została zaktualizowana
-        // False jak ruch jest błędny. Plansza wtedy pozostaje niezmieniona.
         int dx = x2 - x1;
         int dy = y2 - y1;
         if (Math.abs(dx) == 1 && Math.abs(dy) == 1) {
@@ -328,7 +333,6 @@ public class kamila {
                 return false;
             if (dx == 0 && dy == 0)
                 return false;
-            // DODAC PROMOWANIE PRZY BICIU
             return biciePionem(x1, y1, x2, y2, turaBialego);
         }
     }
@@ -602,7 +606,10 @@ public class kamila {
     /******************************* RYSOWANIE ***************************************
      *********************************************************************************/
 
-     // TODO fix biale czarne cos jest nie tak
+    /**
+     *  Wydaje mi się, że na opak są w treści zadania białe z czarnymi kolorami.
+     *  Rysuję tak jak się zgadza na moim komputerze (ubuntu 20.04).
+     */
     void rysujPionka(long pionek) {
         boolean bialy = czyBialy(pionek);
         boolean damka = czyDamka(pionek);
@@ -680,6 +687,3 @@ public class kamila {
         scan.close();
     }
 }
-
-// TODO
-// 1. pousuwać komentarze
