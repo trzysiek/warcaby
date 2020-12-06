@@ -225,8 +225,8 @@ public class kamila {
         // przywracamy do stanu początkowego, jeśli okazało się, że pewna sekwencja bić
         // to ślepy zaułek.
         if (nieMaBiciaPionem(x1, y1, turaBialego) && x1 == x2 && y1 == y2) {
-            // wykonaliśmy całe poprawne bicie - koniec
-            //System.out.println("KONIEC");
+            if ((turaBialego && y2 == 0) || (!turaBialego && y2 == wlkPlanszy - 1))
+                promujPionaDoDamki(x2, y2);
             return true;
         }
 
@@ -519,6 +519,5 @@ public class kamila {
 // 2. koniecGry
 // 3. damka fix test_blad_kiedy_polowicznie_bijemy_damka_2.in
 // 4. pousuwać komentarze
-// 5. czarne zaczynają WTF
-// 6. multiple bicie damka nie dziala :(
-// 7. jak bijemy pionem to też możemy zapromować
+// 5. multiple bicie damka nie dziala :(
+// 6. jak bijemy pionem to też możemy zapromować
