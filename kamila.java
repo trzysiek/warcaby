@@ -431,6 +431,28 @@ public class kamila {
                 if (oIlePol == -1)
                     continue;
                 
+                // jeżeli w jakikolwiek sposób dalsze bicie jest możliwe, musimy stanąć po naszym 1.
+                // biciu na takim polu, gdzie to dalsze bicie jest możliwe.
+                // W celu sprawdzenia czy możemy dalej bić, udajemy, że gdzieś się już ruszyliśmy.
+                boolean dalszeBicieMozliwe = false;
+                for (int i = 1; i < wlkPlanszy; ++i) {
+                    int skaczemyX = x1 + dx * (oIlePol + i);
+                    int skaczemyY = y1 + dy * (oIlePol + i);
+                    if (!naPlanszy(skaczemyX, skaczemyY) || poleZajete(skaczemyX, skaczemyY))
+                        break;
+                    
+                    // udaj ruch
+                    bijPionaIZaktualizujPlansze(x1, y1, skaczemyX, skaczemyY, x1 + dx * oIlePol, y1 + dy * oIlePol);
+                    if (!nieMaBiciaDamka(skaczemyX, skaczemyY, turaBialego))
+                        dalszeBicieMozliwe = true;
+                    // cofnij udawany ruch
+                    cofnijAktualizacjePlanszyPoBiciu(
+                        x1, y1, skaczemyX, skaczemyY, x1 + dx * oIlePol, y1 + dy * oIlePol, turaBialego
+                    );
+                    if (dalszeBicieMozliwe)
+                        break;
+                }
+
                 for (int i = 1; i < wlkPlanszy; ++i) {
                     int skaczemyX = x1 + dx * (oIlePol + i);
                     int skaczemyY = y1 + dy * (oIlePol + i);
@@ -438,6 +460,15 @@ public class kamila {
                         break;
                     
                     bijPionaIZaktualizujPlansze(x1, y1, skaczemyX, skaczemyY, x1 + dx * oIlePol, y1 + dy * oIlePol);
+                    
+                    // jeśli po tym ruchu nie ma dalszego bicia, a wiemy, że je mamy, to ruch jest zły
+                    if (dalszeBicieMozliwe && nieMaBiciaDamka(skaczemyX, skaczemyY, turaBialego)) {
+                        cofnijAktualizacjePlanszyPoBiciu(
+                            x1, y1, skaczemyX, skaczemyY, x1 + dx * oIlePol, y1 + dy * oIlePol, turaBialego
+                        );
+                        continue;
+                    }
+
                     if (bicieDamka(skaczemyX, skaczemyY, x2, y2, turaBialego))
                         return true;
                     cofnijAktualizacjePlanszyPoBiciu(
@@ -632,5 +663,5 @@ public class kamila {
 }
 
 // TODO
-// 1. damka fix test_blad_kiedy_polowicznie_bijemy_damka_2.in = 4. multiple bicie damka nie dziala :(
-// 2. pousuwać komentarze
+// 1. pousuwać komentarze
+// 2. TODO bug nie rozrozniamy miedzy pionem a damka. Mozemy ustawic bledny typ pionka
