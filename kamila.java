@@ -114,6 +114,8 @@ public class kamila {
         } 
     }
 
+    // TODO mozliwy bug. Nie patrzymy czy przywracamy damke czy pionka.
+    // Moga byc obydwa zbite na tym samym polu!!!
     void ustawPionkaNaBedacegoWGrze(int x, int y, boolean czyBialy) {
         // zmartwychwstaje pionka odpowiedniego koloru na (x, y)
         for (int i = 0; i < ilePionkowNaLonga; ++i) {
@@ -176,18 +178,28 @@ public class kamila {
         }
     }
 
-    void bijPionaIZaktualizujPlansze(int x1, int y1, int x2, int y2) {
+    /**
+     * Ruszam się z (x1, y1) na (x2, y2). Biję piona z pozycji (bityX, bityY).
+     * Zakładamy będąc w tej funkcji, że bicie jest w 100% poprawne i
+     * możliwe do wykonania. Sprawdzone wcześniej.
+     */
+    void bijPionaIZaktualizujPlansze(int x1, int y1, int x2, int y2, int bityX, int bityY) {
         // Zakładamy w tym miejscu, że bicie jest w 100% poprawne i możliwe do wykonania.
         // Sprawdzone wcześniej.
         zmienPozycjePiona(x1, y1, x2, y2);
-        usunPionka((x1 + x2) / 2, (y1 + y2) / 2);
+        usunPionka(bityX, bityY);
     }
 
-    void cofnijAktualizacjePlanszyPoBiciuPionem(int x1, int y1, int x2, int y2, boolean turaBialego) {
+    /** Cofam się z (x2, y2) na (x1, y1). Wstawiam pionka na (bityX, bityY).
+    *   Wiem, że ten pionek już tam istnieje, trzeba tylko mu ustawić bit że jest w grze. 
+    */
+    // TODO bug nie rozrozniamy miedzy pionem a damka. Mozemy ustawic bledny typ pionka
+    void cofnijAktualizacjePlanszyPoBiciu(int x1, int y1, int x2, int y2,
+            int bityX, int bityY, boolean turaBialego) {
         // przesun pionka z (x2, y2) na (x1, y1) i dodaj pionka pomiędzy
         // Wiemy że dodawany pionek już istnieje, trzeba tylko ustawić mu bit mówiący czy jest w grze.
         zmienPozycjePiona(x2, y2, x1, y1);
-        ustawPionkaNaBedacegoWGrze((x1 + x2) / 2, (y1 + y2) / 2, !turaBialego);
+        ustawPionkaNaBedacegoWGrze(bityX, bityY, !turaBialego);
     }
 
     boolean mogeZbicPionem(int x1, int y1, int x2, int y2, boolean turaBialego) {
@@ -214,43 +226,23 @@ public class kamila {
         // to ślepy zaułek.
         if (nieMaBiciaPionem(x1, y1, turaBialego) && x1 == x2 && y1 == y2) {
             // wykonaliśmy całe poprawne bicie - koniec
-            System.out.println("KONIEC");
+            //System.out.println("KONIEC");
             return true;
         }
 
-        if (mogeZbicPionem(x1, y1, x1 + 2, y1 + 2, turaBialego)) {
-            System.out.println("TAK! W PRAWO W GÓRĘ");
-            bijPionaIZaktualizujPlansze(x1, y1, x1 + 2, y1 + 2);
-            if (biciePionem(x1 + 2, y1 + 2, x2, y2, turaBialego))
-                return true;
-            cofnijAktualizacjePlanszyPoBiciuPionem(x1, y1, x1 + 2, y1 + 2, turaBialego);
+        for (int dx = -2; dx <= 2; dx += 4) {
+            for (int dy = -2; dy <= 2; dy += 4) {
+                if (mogeZbicPionem(x1, y1, x1 + dx, y1 + dy, turaBialego)) {
+                    //System.out.println("TAK! W PRAWO W GÓRĘ");
+                    bijPionaIZaktualizujPlansze(x1, y1, x1 + dx, y1 + dy, x1 + dx / 2, y1 + dy / 2);
+                    if (biciePionem(x1 + dx, y1 + dy, x2, y2, turaBialego))
+                        return true;
+                    cofnijAktualizacjePlanszyPoBiciu(
+                        x1, y1, x1 + dx, y1 + dy, x1 + dx / 2, y1 + dy / 2, turaBialego
+                    );
+                }
+            }
         }
-
-        if (mogeZbicPionem(x1, y1, x1 + 2, y1 - 2, turaBialego)) {
-            System.out.println("TAK! W PRAWO W DÓŁ");
-            bijPionaIZaktualizujPlansze(x1, y1, x1 + 2, y1 - 2);
-            if (biciePionem(x1 + 2, y1 - 2, x2, y2, turaBialego))
-                return true;
-            cofnijAktualizacjePlanszyPoBiciuPionem(x1, y1, x1 + 2, y1 - 2, turaBialego);
-        }
-
-        if (mogeZbicPionem(x1, y1, x1 - 2, y1 + 2, turaBialego)) {
-            System.out.println("TAK! W LEWO W GÓRĘ");
-            bijPionaIZaktualizujPlansze(x1, y1, x1 - 2, y1 + 2);
-            if (biciePionem(x1 - 2, y1 + 2, x2, y2, turaBialego))
-                return true;
-            cofnijAktualizacjePlanszyPoBiciuPionem(x1, y1, x1 - 2, y1 + 2, turaBialego);
-        }
-
-        if (mogeZbicPionem(x1, y1, x1 - 2, y1 - 2, turaBialego)) {
-            System.out.println("TAK! W LEWO W DÓŁ\nPlansza po biciu to:");
-            bijPionaIZaktualizujPlansze(x1, y1, x1 - 2, y1 - 2);
-            rysujPlansze();
-            if (biciePionem(x1 - 2, y1 - 2, x2, y2, turaBialego))
-                return true;
-            cofnijAktualizacjePlanszyPoBiciuPionem(x1, y1, x1 - 2, y1 - 2, turaBialego);
-        }
-
         return false;
     }
 
@@ -287,18 +279,124 @@ public class kamila {
                 return false;
             if (dx == 0 && dy == 0)
                 return false;
-            
+            // DODAC PROMOWANIE PRZY BICIU
             return biciePionem(x1, y1, x2, y2, turaBialego);
         }
     }
 
-    boolean ruchDamka(int x1, int y1, int x2, int y2, boolean turaBialego) {
-        //boolean jedenRuch = mogeW1RuchuDamka(x1, y1, x2, y2);
-        //if (jedenRuch) {
-        //    boolean bijeCosPoDrodze = bijeCosPoDrodzeDamka(x1, y1, x2, y2);
-        //    if (!)
-        //}
+    /**
+     * true <=> 2 pola są na 1 przekątnej && nie ma nic po drodze
+     */
+    boolean mogeRuszycDamkaBezBicia(int x1, int y1, int x2, int y2) {
+        if (Math.abs(x2 - x1) != Math.abs(y2 - y1))
+            return false;
+
+        int dx = (x2 > x1) ? 1 : -1;
+        int dy = (y2 > y1) ? 1 : -1;
+        int aktX = x1 + dx;
+        int aktY = y1 + dy;
+        while (aktX != x2) {
+            if (poleZajete(aktX, aktY))
+                return false;
+            aktX += dx;
+            aktY += dy;
+        }
+        return !poleZajete(aktX, aktY);
+    }
+
+    /**
+     * dx, dy = [+-]1. Oznacza kierunek.
+     * Zwraca -1 jak nie ma możliwego bicia w tym kierunku.
+     * Zwraca n, jeśli jest bicie, a najbliższy pionek, który bijemy, jest
+     * odległy o n pól.
+     */
+    int mogeZbicDamka(int x, int y, int dx, int dy, boolean turaBialego) {
+        System.out.printf("Zaczynam mogeZbicDamka, dx=%d, dy=%d\n", dx,dy);
+        int aktX = x;
+        int aktY = y;
+        for (int i = 1; i <= wlkPlanszy; ++i) {
+            aktX += dx;
+            aktY += dy;
+            if (!naPlanszy(aktX, aktY))
+                return -1;
+            System.out.printf("aktX=%d, aktY=%d\n",aktX+1,aktY+1);
+            long pionek = pionekNaXY(aktX, aktY);
+            if (czyWGrze(pionek)) {
+                System.out.printf("Mam pionka: (%d, %d). czyBialy(pionek): %b, turaBialego: %b\n", aktX+1,aktY+1,czyBialy(pionek), turaBialego);
+                if (czyBialy(pionek) == turaBialego)
+                    // pierwszy pionek w tym kierunku jest tego samego koloru co ruch. Zle.
+                    return -1;
+                else if (naPlanszy(aktX + dx, aktY + dy) && !poleZajete(aktX + dx, aktY + dy)) {
+                    System.out.printf("WTF PRZECIEZ DZIALA: %d %d to: %d\n", aktX, x, (dx == 1) ? (aktX - x) : (x - aktX));
+                    return (dx == 1) ? (aktX - x) : (x - aktX);
+                }
+                else {
+                    System.out.printf("WTF? Jak to nie moge sie ruszyc\n");
+                    return -1;
+                }
+            }
+        }
+        return -1;
+    }
+
+    boolean nieMaBiciaDamka(int x, int y, boolean turaBialego) {
+        return mogeZbicDamka(x, y, 1, 1, turaBialego) == -1
+            && mogeZbicDamka(x, y, 1, -1, turaBialego) == -1
+            && mogeZbicDamka(x, y, -1, 1, turaBialego) == -1
+            && mogeZbicDamka(x, y, -1, -1, turaBialego) == -1;
+    }
+
+    boolean bicieDamka(int x1, int y1, int x2, int y2, boolean turaBialego) {
+        if (nieMaBiciaDamka(x1, y1, turaBialego) && x1 == x2 && y1 == y2)
+            return true;
+        
+        System.out.printf("bicieDamka: z (%d, %d) na (%d, %d). Jest bicie.\n", x1+1,y1+1,x2+1,y2+1);
+        for (int dx = -1; dx <= 1; dx += 2) {
+            for (int dy = -1; dy <= 1; dy += 2) {
+                // ruszam się w kierunku (dx, dy)
+
+                int oIlePol = mogeZbicDamka(x1, y1, dx, dy, turaBialego);
+                System.out.printf("Kierunek (%d, %d). OIlePol: %d\n", dx,dy,oIlePol);
+                // -1 jeśli nie mogę zbić w tym kierunku
+                // n jeśli biję pionka odległego o n pól
+                // Mogę wtedy stanąć na polach w tym samym kierunku odległych o (n+1), (n+2), ...
+                // dopóki wszystkie są wolne. Jeśli jest zajęte przez pionka przeciwnego koloru,
+                // to teoretycznie mogłabym to zbić, ale rozbijam to na 2 ruchy, bo będzie prościej.
+                if (oIlePol == -1)
+                    continue;
+                for (int i = 1; i < wlkPlanszy; ++i) {
+                    int skaczemyX = x1 + dx * (oIlePol + i);
+                    int skaczemyY = y1 + dy * (oIlePol + i);
+                    if (!naPlanszy(skaczemyX, skaczemyY) || poleZajete(skaczemyX, skaczemyY))
+                        break;
+                    
+                    bijPionaIZaktualizujPlansze(x1, y1, skaczemyX, skaczemyY, x1 + dx * oIlePol, y1 + dy * oIlePol);
+                    if (bicieDamka(skaczemyX, skaczemyY, x2, y2, turaBialego))
+                        return true;
+                    cofnijAktualizacjePlanszyPoBiciu(
+                        x1, y1, skaczemyX, skaczemyY, x1 + dx * oIlePol, x2 + dy * oIlePol, turaBialego
+                    );
+                }
+            }
+        }
         return false;
+    }
+
+    boolean ruchDamka(int x1, int y1, int x2, int y2, boolean turaBialego) {
+        System.out.printf("%d %d %d %d\n", x1,y1,x2,y2);
+        if (x1 == x2 && y1 == y2)
+            return false;
+        if (nieMaBiciaDamka(x1, y1, turaBialego)) {
+            System.out.printf("nie ma bicia? co?\n");
+            if (mogeRuszycDamkaBezBicia(x1, y1, x2, y2)) {
+                zmienPozycjePiona(x1, y1, x2, y2);
+                return true;
+            }
+            else
+                return false;
+        }
+        else
+            return bicieDamka(x1, y1, x2, y2, turaBialego);
     }
 
     boolean ruch(int x1, int y1, int x2, int y2, boolean turaBialego) {
@@ -343,6 +441,7 @@ public class kamila {
     /******************************* RYSOWANIE ***************************************
      *********************************************************************************/
 
+     // TODO fix biale czarne cos jest nie tak
     void rysujPionka(long pionek) {
         boolean bialy = czyBialy(pionek);
         boolean damka = czyDamka(pionek);
@@ -414,9 +513,9 @@ public class kamila {
     }
 }
 
-
-
 // TODO
 // 1. jak mamy bicie, to nie mozemy sie ruszyc bez
 // 2. koniecGry
 // 3. damka
+// 4. pousuwać komentarze
+// 5. czarne zaczynają WTF
