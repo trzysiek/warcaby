@@ -178,6 +178,38 @@ public class kamila {
         }
     }
 
+    boolean mamyBicie(boolean turaBialego) {
+        long pionki1;
+        long pionki2;
+        if (turaBialego) {
+            pionki1 = bPionki1;
+            pionki2 = bPionki2;
+        }
+        else {
+            pionki1 = czPionki1;
+            pionki2 = czPionki2;
+        }
+        for (int i = 0; i < ilePionkowNaLonga; ++i) {
+            long przes = ileBitowNaPionka * i;
+            
+            long p = pionki1 >> przes;
+            if (czyWGrze(p)) {
+                if (czyDamka(p) && !nieMaBiciaDamka(pozX(p), pozY(p), turaBialego))
+                    return true;
+                if (!czyDamka(p) && !nieMaBiciaPionem(pozX(p), pozY(p), turaBialego))
+                    return true;
+            }
+            p = pionki2 >> przes;
+            if (czyWGrze(p)) {
+                if (czyDamka(p) && !nieMaBiciaDamka(pozX(p), pozY(p), turaBialego))
+                    return true;
+                if (!czyDamka(p) && !nieMaBiciaPionem(pozX(p), pozY(p), turaBialego))
+                    return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Ruszam się z (x1, y1) na (x2, y2). Biję piona z pozycji (bityX, bityY).
      * Zakładamy będąc w tej funkcji, że bicie jest w 100% poprawne i
@@ -261,10 +293,10 @@ public class kamila {
             if (poleZajete(x2, y2))
                 return false;
             
-            if (!nieMaBiciaPionem(x1, y1, turaBialego)) {
+            if (mamyBicie(turaBialego)) {
                 // TODO jak bicie damka to tez.
                 // TODO jak kazdym innym pionem bicie, to tez :(
-                System.out.println("Masz możliwe bicie pionem. Musisz go użyć.");
+                printWriter.println("Masz możliwe bicie. Musisz go użyć.");
                 return false;
             }
             
@@ -390,6 +422,10 @@ public class kamila {
         if (nieMaBiciaDamka(x1, y1, turaBialego)) {
             System.out.printf("nie ma bicia? co?\n");
             if (mogeRuszycDamkaBezBicia(x1, y1, x2, y2)) {
+                if (mamyBicie(turaBialego)) {
+                    printWriter.println("Mamy bicie do wykonania! Trzeba je zrobić!");
+                    return false;
+                }
                 zmienPozycjePiona(x1, y1, x2, y2);
                 return true;
             }
@@ -449,8 +485,8 @@ public class kamila {
         // podmieniłam unicode'y dla czarnego i bialego pionka - w treści były na opak
         char czPion = '\u2659';
         char bPion = '\u265F';
-        char bDamka = '\u2655';
-        char czDamka = '\u265B';
+        char czDamka = '\u2655';
+        char bDamka = '\u265B';
         if (!damka)
             printWriter.print((bialy ? bPion : czPion) + " ");
         else
@@ -502,7 +538,7 @@ public class kamila {
             int x2 = scan.nextInt();
             int y2 = scan.nextInt();
             if (!gra.ruch(x1 - 1, y1 - 1, x2 - 1, y2 - 1, turaBialego)) {
-                System.out.println("Bledny ruch!");
+                gra.printWriter.println("Bledny ruch!");
                 czyRysowacPlansze = false;
             }
             else {
@@ -515,9 +551,6 @@ public class kamila {
 }
 
 // TODO
-// 1. jak mamy bicie, to nie mozemy sie ruszyc bez
-// 2. koniecGry
-// 3. damka fix test_blad_kiedy_polowicznie_bijemy_damka_2.in
-// 4. pousuwać komentarze
-// 5. multiple bicie damka nie dziala :(
-// 6. jak bijemy pionem to też możemy zapromować
+// 1. koniecGry
+// 2. damka fix test_blad_kiedy_polowicznie_bijemy_damka_2.in = 4. multiple bicie damka nie dziala :(
+// 3. pousuwać komentarze
