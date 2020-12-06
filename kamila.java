@@ -11,6 +11,8 @@ public class kamila {
     long ilePionkowNaLonga = 6;
     long ileBitowNaPionka = 9;
 
+    int ileRuchowDamkamiBezBicia = 0;
+
     PrintWriter printWriter = new PrintWriter(System.out, true);
 
     boolean czyBialy(long pionek) {
@@ -259,6 +261,7 @@ public class kamila {
         if (nieMaBiciaPionem(x1, y1, turaBialego) && x1 == x2 && y1 == y2) {
             if ((turaBialego && y2 == 0) || (!turaBialego && y2 == wlkPlanszy - 1))
                 promujPionaDoDamki(x2, y2);
+            ileRuchowDamkamiBezBicia = 0;
             return true;
         }
 
@@ -294,8 +297,6 @@ public class kamila {
                 return false;
             
             if (mamyBicie(turaBialego)) {
-                // TODO jak bicie damka to tez.
-                // TODO jak kazdym innym pionem bicie, to tez :(
                 printWriter.println("Masz możliwe bicie. Musisz go użyć.");
                 return false;
             }
@@ -303,6 +304,7 @@ public class kamila {
             zmienPozycjePiona(x1, y1, x2, y2);
             if ((turaBialego && y2 == 0) || (!turaBialego && y2 == wlkPlanszy - 1))
                 promujPionaDoDamki(x2, y2);
+            ileRuchowDamkamiBezBicia = 0;
             return true;
         }
         else {
@@ -316,7 +318,37 @@ public class kamila {
         }
     }
 
+    boolean mogeRuszycPionemBezBicia(int x, int y, boolean turaBialego) {
+        int dy = turaBialego ? -1 : 1;
+        for (int dx = -1; dx <= 1; dx += 2) {
+            int nowyX = x + dx;
+            int nowyY = y + dy;
+            if (naPlanszy(nowyX, nowyY) && !poleZajete(nowyX, nowyY))
+                return true;
+        }
+        return false;
+    }
+
     /**
+     * Czy mogę w ogóle gdzieś się ruszyć daną damką, bez bicia.
+     * Wystarczy sprawdzić 4 sąsiedne pola.
+     */
+    boolean mogeRuszycDamkaBezBicia(int x, int y) {
+        for (int dx = -1; dx <= 1; dx += 2) {
+            for (int dy = -1; dy <= 1; dy += 2) {
+                int nowyX = x + dx;
+                int nowyY = y + dy;
+                if (!naPlanszy(nowyX, nowyY))
+                    continue;
+                if (mogeRuszycDamkaBezBicia(x, y, nowyX, nowyY))
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * ruch (x1, y1) -> (x2, y2)
      * true <=> 2 pola są na 1 przekątnej && nie ma nic po drodze
      */
     boolean mogeRuszycDamkaBezBicia(int x1, int y1, int x2, int y2) {
@@ -379,8 +411,10 @@ public class kamila {
     }
 
     boolean bicieDamka(int x1, int y1, int x2, int y2, boolean turaBialego) {
-        if (nieMaBiciaDamka(x1, y1, turaBialego) && x1 == x2 && y1 == y2)
+        if (nieMaBiciaDamka(x1, y1, turaBialego) && x1 == x2 && y1 == y2) {
+            ileRuchowDamkamiBezBicia = 0;
             return true;
+        }
         
         System.out.printf("bicieDamka: z (%d, %d) na (%d, %d). Jest bicie/nie jestem na koncowej pozycji.\n", x1+1,y1+1,x2+1,y2+1);
         for (int dx = -1; dx <= 1; dx += 2) {
@@ -427,6 +461,7 @@ public class kamila {
                     return false;
                 }
                 zmienPozycjePiona(x1, y1, x2, y2);
+                ileRuchowDamkamiBezBicia++;
                 return true;
             }
             else
@@ -458,8 +493,52 @@ public class kamila {
         }
     }
 
-    boolean koniecGry() {
-        return false;
+    /**
+     * Koniec <=>
+     * (1. nie mamy bicia &&
+     * 2. nie mamy ruchu bez bicia)
+     * || 3. 30 ostatnich ruchów (po 15 każdego gracza) to ruchy damkami bez bicia
+     */
+    boolean koniecGry(boolean turaBialego) {
+        // 3. przypadek
+        if (ileRuchowDamkamiBezBicia >= 30)
+            return true;
+
+        // 1. przypadek: mamy bicie = nie koniec.
+        if (mamyBicie(turaBialego))
+            return false;
+        
+        // 2. przypadek: mamy ruch bez bicia = nie koniec
+        long pionki1;
+        long pionki2;
+        if (turaBialego) {
+            pionki1 = bPionki1;
+            pionki2 = bPionki2;
+        }
+        else {
+            pionki1 = czPionki1;
+            pionki2 = czPionki2;
+        }
+        for (int i = 0; i < ilePionkowNaLonga; ++i) {
+            long przes = ileBitowNaPionka * i;
+            
+            long p = pionki1 >> przes;
+            if (czyWGrze(p)) {
+                if (!czyDamka(p) && mogeRuszycPionemBezBicia(pozX(p), pozY(p), turaBialego))
+                    return false;
+                if (czyDamka(p) && mogeRuszycDamkaBezBicia(pozX(p), pozY(p)))
+                    return false;
+            }
+            p = pionki2 >> przes;
+            if (czyWGrze(p)) {
+                if (!czyDamka(p) && mogeRuszycPionemBezBicia(pozX(p), pozY(p), turaBialego))
+                    return false;
+                if (czyDamka(p) && mogeRuszycDamkaBezBicia(pozX(p), pozY(p)))
+                    return false;
+            }
+        }
+        // nie mamy ruchu -> koniec
+        return true;
     }
 
     void ustawStartowePolozenie() {
@@ -529,7 +608,7 @@ public class kamila {
         boolean czyRysowacPlansze = true;
 
         Scanner scan = new Scanner(System.in);
-        while (!gra.koniecGry()) {
+        while (!gra.koniecGry(turaBialego)) {
             if (czyRysowacPlansze)
                 gra.rysujPlansze();
             
@@ -546,11 +625,12 @@ public class kamila {
                 czyRysowacPlansze = true;
             }
         }
+        gra.rysujPlansze();
+        gra.printWriter.println("Koniec gry!! Wygrały " + (turaBialego ? "czarne" : "białe"));
         scan.close();
     }
 }
 
 // TODO
-// 1. koniecGry
-// 2. damka fix test_blad_kiedy_polowicznie_bijemy_damka_2.in = 4. multiple bicie damka nie dziala :(
-// 3. pousuwać komentarze
+// 1. damka fix test_blad_kiedy_polowicznie_bijemy_damka_2.in = 4. multiple bicie damka nie dziala :(
+// 2. pousuwać komentarze
