@@ -1,1 +1,1 @@
-# warcaby
+# warcaby (checkers)
